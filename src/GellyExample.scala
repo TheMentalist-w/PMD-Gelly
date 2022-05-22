@@ -43,19 +43,22 @@ object GellyExample extends App {
   // Tworzymy graf z węzłów i krawędzi
   val graph = Graph.fromCollection(vertices, edges, env)
 
-  //TODO zad. 7. Znajdź i wyświetl osobę, która dokonała największej liczby przejazdów.
-  //Sprawdzono w Excelu, że powinna to być osoba z rowerem SEA00281	(667 przejazdów)
+  // zad.7 Znajdź i wyświetl osobę, która dokonała największej liczby przejazdów.
+  // Sprawdzono w Excelu, że powinna to być osoba z rowerem SEA00281 (667 przejazdów)
   class CountTuple3ToTuple2Mapper extends MapFunction[org.apache.flink.api.java.tuple.Tuple3[String, String, String], org.apache.flink.api.java.tuple.Tuple2[String, Long]] {
     override def map(t: tuple.Tuple3[String, String, String]) =
       new org.apache.flink.api.java.tuple.Tuple2[String, Long](t.f2, 1)
   }
 
-  val mostUsedBike = graph.getEdgesAsTuple3
+  val mostUsedBikeTuple = graph.getEdgesAsTuple3
     .map(new CountTuple3ToTuple2Mapper)
     .groupBy(0).reduce((w1, w2) => new Tuple2[String, Long](w1.f0, w1.f1 + w2.f1))
     .reduce((w1, w2) => if(w1.f1 < w2.f1) new Tuple2[String, Long](w2.f0, w2.f1) else new Tuple2[String, Long](w1.f0, w1.f1) )
-    .collect().get(0).f0
+    .collect().get(0)
+  println("Zad.7 Największa liczba przejazdów: " + mostUsedBikeTuple.f0 + " (" + mostUsedBikeTuple.f1.toString + ")")
+  val mostUsedBike = mostUsedBikeTuple.f0
 
+  // zad.8
   // Graf z dobrymi krawędziami i zbędnymi wierzchołkami
   val usedGraph = graph.filterOnEdges(edge => edge.getValue == mostUsedBike)
 
