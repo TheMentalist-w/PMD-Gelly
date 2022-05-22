@@ -1,5 +1,3 @@
-import java.util
-
 import org.apache.flink.api.java.{ExecutionEnvironment}
 import org.apache.flink.graph.{Edge, Graph, Vertex}
 import collection.JavaConversions._
@@ -12,11 +10,14 @@ object GellyExample extends App {
 
         // 2) Stacje key - id stacji, value - nazwa stacji
         val vertexFile = Source.fromFile("./station.csv")
-        val vertices= vertexFile
+        val vertices = vertexFile
           .getLines()
           .filter(!_.startsWith("\"station_id\""))
           .map(_.split(","))
-          .map(array => new Vertex(array(0), array(1)))
+          .map(array => new Vertex(
+                  array(0).slice(1, array(0).length-1),
+                  array(1).slice(1, array(1).length-1))
+          )
           .toArray
           .toSeq
         vertexFile.close()
@@ -28,15 +29,45 @@ object GellyExample extends App {
           .filter(!_.startsWith("\"trip_id\""))
           .map(_.split(","))
           .filter(array => array(7).contains("-"))
-          .map(array => new Edge(array(7), array(8), array(3)))
+          .map(array => new Edge(
+                  array(7).slice(1, array(7).length-1),
+                  array(8).slice(1, array(8).length-1),
+                  array(3).slice(1, array(3).length-1))
+          )
           .toArray
           .toSeq
         edgeFile.close()
 
-        // 3) Tworzymy graf z węzłów i krawędzi
+        // Tworzymy graf z węzłów i krawędzi
         val graph = Graph.fromCollection(vertices, edges, env)
 
-        // 6) Uzyskajmy z grafu kogoś kto zna co najmniej dwie osoby
-        val someone = graph.outDegrees.filter(_.f1.getValue >= 2).collect().get(0)
-        println(someone.f0)
+        //TODO znaleźć rower z największą liczbą przejazdów
+        val mostUsedBike = "SEA00151"
+
+        // Graf z dobrymi krawędziami i zbędnymi wierzchołkami
+        val usedGraph = graph.filterOnEdges(edge => edge.getValue == mostUsedBike)
+
+        val unconnectedVerticesId = usedGraph.getDegrees
+          .filter(_.f1.getValue == 0)
+          .map(vertex => vertex.f0)
+          .collect()
+
+        // Lista zbędnych wierzchołków
+        val unconnectedVertices = vertices.filter(x => unconnectedVerticesId.contains(x.getId))
+
+        // Graf bez zbędnych wierzchołków
+        val mostUsedGraph = usedGraph.removeVertices(unconnectedVertices)
+//         6) Uzyskajmy z grafu kogoś kto zna co najmniej dwie osoby
+//                val someone = mostUsedGraph.outDegrees.filter(_.f1.getValue >= 2).collect().get(0)
+//                println(someone.f0)
+
+        val vertexMaxOutDeg = mostUsedGraph.outDegrees().maxBy(1) // Najczęściej używana stacja jako startowa
+        val vertexMaxInDeg = mostUsedGraph.inDegrees().maxBy(1) // Najczęściej używana stacja jako końcowa
+
+        println("Najczęściej używana stacja jako startowa:")
+        vertexMaxInDeg.print()
+
+        println("Najczęściej używana stacja jako końcowa:")
+        vertexMaxOutDeg.print()
+
 }
