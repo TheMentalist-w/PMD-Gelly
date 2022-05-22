@@ -76,12 +76,11 @@ object GellyExample extends App {
   //                val someone = mostUsedGraph.outDegrees.filter(_.f1.getValue >= 2).collect().get(0)
   //                println(someone.f0)
 
-  val vertexMaxOutDeg = mostUsedGraph.outDegrees().maxBy(1) // Najczęściej używana stacja jako startowa
-  val vertexMaxInDeg = mostUsedGraph.inDegrees().maxBy(1) // Najczęściej używana stacja jako końcowa
+  val vertexMaxOutDeg = mostUsedGraph.outDegrees().maxBy(1).collect().get(0) // Najczęściej używana stacja jako startowa
+  val vertexMaxInDeg = mostUsedGraph.inDegrees().maxBy(1).collect().get(0) // Najczęściej używana stacja jako końcowa
 
-  println("Najczęściej używana stacja jako startowa:")
-  vertexMaxInDeg.print()
+  println("Zad.9")
+  println("Najczęściej używana stacja jako startowa: " + vertexMaxOutDeg.f0 + " (" + vertexMaxOutDeg.f1.toString + ")")
 
-  println("Najczęściej używana stacja jako końcowa:")
-  vertexMaxOutDeg.print()
+  println("Najczęściej używana stacja jako końcowa: " + vertexMaxInDeg.f0 + " (" + vertexMaxInDeg.f1.toString + ")")
 }
