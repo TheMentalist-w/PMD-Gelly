@@ -57,9 +57,6 @@ object GellyExample extends App {
 
         // Graf bez zbędnych wierzchołków
         val mostUsedGraph = usedGraph.removeVertices(unconnectedVertices)
-//         6) Uzyskajmy z grafu kogoś kto zna co najmniej dwie osoby
-//                val someone = mostUsedGraph.outDegrees.filter(_.f1.getValue >= 2).collect().get(0)
-//                println(someone.f0)
 
         val vertexMaxOutDeg = mostUsedGraph.outDegrees().maxBy(1) // Najczęściej używana stacja jako startowa
         val vertexMaxInDeg = mostUsedGraph.inDegrees().maxBy(1) // Najczęściej używana stacja jako końcowa
