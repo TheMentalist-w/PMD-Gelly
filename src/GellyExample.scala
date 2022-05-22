@@ -53,9 +53,8 @@ object GellyExample extends App {
   val mostUsedBike = graph.getEdgesAsTuple3
     .map(new CountTuple3ToTuple2Mapper)
     .groupBy(0).reduce((w1, w2) => new Tuple2[String, Long](w1.f0, w1.f1 + w2.f1))
-    .reduce((w1, w2) => new Tuple2[String, Long]( if(w1.f1 < w2.f1) w2.f0 else w1.f0, if(w1.f1 < w2.f1) w2.f1 else w1.f1))
+    .reduce((w1, w2) => if(w1.f1 < w2.f1) new Tuple2[String, Long](w2.f0, w2.f1) else new Tuple2[String, Long](w1.f0, w1.f1) )
     .collect().get(0).f0
-
 
   // Graf z dobrymi krawędziami i zbędnymi wierzchołkami
   val usedGraph = graph.filterOnEdges(edge => edge.getValue == mostUsedBike)
